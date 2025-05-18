@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { PrismaService } from 'src/prisma.service';
 import { UserService } from 'src/user/user.service';
+import { NotificationService } from 'src/notification/notification.service';
 import { CompanyService } from 'src/company/company.service';
 import { ReviewRequestDto } from './dto/review-request.dto';
 
@@ -11,6 +12,7 @@ export class RequestService {
     private prisma: PrismaService,
     private UserService: UserService,
     private CompanyService: CompanyService,
+    private NotificationService: NotificationService,
   ) {}
 
   async getRequestCompany(companyId: number, userId: number) {
@@ -54,6 +56,8 @@ export class RequestService {
       );
     }
 
+    await this.NotificationService.createToCompany(`К вам пришла новая заявка от пользователя ${user.name}`, companyId);
+
     return await this.prisma.request.create({
       data: {
         ...dto,
@@ -80,6 +84,8 @@ export class RequestService {
     if (user.companyId !== request.companyId) {
       throw new BadRequestException('Нет доступа к заявке');
     }
+
+    await this.NotificationService.createToUser(`Ваша заявка была рассмотрена`, userId);
 
     return await this.prisma.request.update({
       where: {

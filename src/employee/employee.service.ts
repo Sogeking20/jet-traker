@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma.service';
 import { UserService } from './../user/user.service';
 import { AddEmployeeDto } from './dto/add-employee.dto';
 import { DeleteEmployeeDto } from './dto/delete-employee.dto';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class EmployeeService {
@@ -11,6 +12,7 @@ export class EmployeeService {
     private prisma: PrismaService,
     private UserService: UserService,
     private CompanyService: CompanyService,
+    private NotificationService: NotificationService,
   ) {}
 
   async getEmployees(companyId: number, userId: number) {
@@ -50,6 +52,8 @@ export class EmployeeService {
       throw new BadRequestException('Пользователь уже состоит в компании');
 
     const { email, ...data } = dto;
+
+    await this.NotificationService.createToUser(`Компания ${company.name} сделала вас своим сотрудником`, user.id);
 
     return await this.prisma.user.update({
       where: { email: email },

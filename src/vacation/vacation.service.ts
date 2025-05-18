@@ -39,4 +39,35 @@ export class VacationService {
       },
     });
   }
+
+  async update(companyId: number, vacationId: number, dto: UpdateVacationDto) {
+    const vacation = await this.getVacationById(vacationId);
+
+    if (!vacation) throw new BadRequestException('Пользователь не существует');
+
+    const company = await this.CompanyService.getByCompany(companyId);
+
+    if (!company) throw new BadRequestException('Компания не существует');
+
+    if (vacation.companyId !== companyId) {
+      throw new BadRequestException(
+        'У вас нет доступа',
+      );
+    }
+
+    return await this.prisma.vacation.update({
+      where: {
+        id: vacationId,
+      },
+      data: dto
+    });
+  }
+
+  async getVacationById(id: number) {
+    return this.prisma.vacation.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
 }

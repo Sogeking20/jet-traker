@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   HttpCode,
+  Put
 } from '@nestjs/common';
 import { VacationService } from './vacation.service';
 import { CreateVacationDto } from './dto/create-vacation.dto';
@@ -32,5 +33,18 @@ export class VacationController {
     @CurrentUser('companyId') companyId: number,
   ) {
     return this.vacationService.create(companyId, dto);
+  }
+
+  @HttpCode(200)
+  @Put(':id')
+  @Auth()
+  @HasCompany()
+  @Roles('MANAGER')
+  async update(
+    @Param('id') vacationId: number,
+    @Body() dto: UpdateVacationDto,
+    @CurrentUser('companyId') companyId: number,
+  ) {
+    return this.vacationService.update(companyId, vacationId, dto);
   }
 }
